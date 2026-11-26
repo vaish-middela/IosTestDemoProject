@@ -10,11 +10,11 @@ final class SwiftUITestPracticeUITests: XCTestCase{
 
     }
 
-    fun testGreetingIsShown(){
+    func testGreetingIsShown(){
         XCTAssertTrue(app.staticTexts["greeting"].waitForExistence(timeout: 5))
     }
 
-    fun testEmailActionShowsAlert(){
+    func testEmailActionShowsAlert(){
         app.buttons["emailActionButton"].tap()
 
         XCTAssertTrue(
