@@ -1,0 +1,39 @@
+name: SwiftUITestPractice
+
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+
+targets:
+  SwiftUITestPractice:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/App
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.SwiftUITestPractice
+        GENERATE_INFOPLIST_FILE: YES
+
+  SwiftUITestPracticeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/UI
+    dependencies:
+      - target: SwiftUITestPractice
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.SwiftUITestPracticeUITests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  SwiftUITestPractice:
+    build:
+      targets:
+        SwiftUITestPractice: all
+        SwiftUITestPracticeUITests: [test]
+    test:
+      targets:
+        - SwiftUITestPracticeUITests

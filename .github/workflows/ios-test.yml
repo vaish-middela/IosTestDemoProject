@@ -1,0 +1,40 @@
+name: iOS UI tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-tests:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+
+      - name: Run UI tests on iPhone simulator
+        run: |
+          xcodebuild test \
+            -project SwiftUITestPractice.xcodeproj \
+            -scheme SwiftUITestPractice \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+
+      - name: Save test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-results
+          path: ${{ runner.temp }}/SwiftUITestResults.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
