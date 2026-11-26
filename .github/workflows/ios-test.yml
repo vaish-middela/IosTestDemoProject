@@ -91,7 +91,7 @@ jobs:
         env:
           BS_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BS_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BS_DEVICE: ${{ vars.BROWSERSTACK_DEVICE }}
+          BS_DEVICE: ${{ secrets.BROWSERSTACK_DEVICE }}
         run: |
           set -euo pipefail
           # test -n "$BS_USERNAME"
@@ -99,7 +99,7 @@ jobs:
           # test -n "$BS_DEVICE"
           [ -n "$BS_USERNAME" ] || { echo "BROWSERSTACK_USERNAME is empty"; exit 1; }
           [ -n "$BS_ACCESS_KEY" ] || { echo "BROWSERSTACK_ACCESS_KEY is empty"; exit 1; }
-          [ -n "$BS_DEVICE" ] || { echo "BROWSERSTACK_DEVICE variable is empty"; exit 1; }
+          [ -n "$BS_DEVICE" ] || { echo "BROWSERSTACK_DEVICE is empty"; exit 1; }
           echo "All BrowserStack settings are present"
 
           APP_RESPONSE=$(curl --fail-with-body -sS \
