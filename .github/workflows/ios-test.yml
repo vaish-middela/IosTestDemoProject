@@ -11,6 +11,9 @@ permissions:
 jobs:
   ui-tests:
     runs-on: macos-26
+    env:
+      SIMULATOR_DEVICE: ${{ vars.IOS_SIMULATOR_DEVICE || 'iPhone 17e' }}
+      SIMULATOR_OS: ${{ vars.IOS_SIMULATOR_OS || '26.4.1' }}
 
     steps:
       - name: Check out repository
@@ -30,7 +33,7 @@ jobs:
           xcodebuild test \
             -project SwiftUITestPractice.xcodeproj \
             -scheme SwiftUITestPractice \
-            -destination 'platform=iOS Simulator,name=iPhone 17e,OS=26.4.1'\
+            -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
             -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
 
       - name: Save simulator test results
