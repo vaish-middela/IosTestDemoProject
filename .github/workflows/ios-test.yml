@@ -1,40 +1,85 @@
-name: iOS UI tests
+browserstack:
+  if: github.event_name == 'workflow_dispatch'
+  needs: ui-tests
+  runs-on: macos-latest
 
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+  steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
 
-permissions:
-  contents: read
+    - name: Install XcodeGen
+      run: brew install xcodegen
 
-jobs:
-  ui-tests:
-    runs-on: macos-latest
+    - name: Generate Xcode project
+      run: xcodegen generate --spec project.yml
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+    - name: Build app and UI test runner for iOS devices
+      run: |
+        xcodebuild build-for-testing \
+          -project SwiftUITestPractice.xcodeproj \
+          -scheme SwiftUITestPractice \
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.4'\
+          -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+          CODE_SIGNING_ALLOWED=NO
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
+    - name: Package app and UI test runner
+      run: |
+        set -euo pipefail
 
-      - name: Generate Xcode project
-        run: xcodegen generate --spec project.yml
+        PRODUCTS="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphoneos"
+        APP="$PRODUCTS/SwiftUITestPractice.app"
+        TEST_RUNNER="$PRODUCTS/SwiftUITestPracticeUITests-Runner.app"
 
-      - name: Run UI tests on iPhone simulator
-        run: |
-          xcodebuild test \
-            -project SwiftUITestPractice.xcodeproj \
-            -scheme SwiftUITestPractice \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+        test -d "$APP"
+        test -d "$TEST_RUNNER"
 
-      - name: Save test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ui-test-results
-          path: ${{ runner.temp }}/SwiftUITestResults.xcresult
-          if-no-files-found: ignore
-          retention-days: 7
+        mkdir -p "$RUNNER_TEMP/ipa/Payload"
+        ditto "$APP" "$RUNNER_TEMP/ipa/Payload/SwiftUITestPractice.app"
+        (cd "$RUNNER_TEMP/ipa" && zip -qr "$RUNNER_TEMP/app.ipa" Payload)
+
+        ditto -c -k --sequesterRsrc --keepParent \
+          "$TEST_RUNNER" "$RUNNER_TEMP/test-suite.zip"
+
+    - name: List available simulators
+      run: |
+        xcrun simctl list devices available
+        xcodebuild -showdestinations \
+          -project SwiftUITestPractice.xcodeproj \
+          -scheme SwiftUITestPractice
+
+    - name: Upload app and test suite, then start BrowserStack run
+      env:
+        BS_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+        BS_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        BS_DEVICE: ${{ vars.BROWSERSTACK_DEVICE }}
+      run: |
+        set -euo pipefail
+        test -n "$BS_USERNAME"
+        test -n "$BS_ACCESS_KEY"
+        test -n "$BS_DEVICE"
+
+        APP_RESPONSE=$(curl --fail-with-body -sS \
+          -u "$BS_USERNAME:$BS_ACCESS_KEY" \
+          -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/app" \
+          -F "file=@$RUNNER_TEMP/app.ipa")
+        APP_URL=$(echo "$APP_RESPONSE" | jq -er '.app_url')
+        echo "Uploaded app: $APP_URL"
+
+        TEST_RESPONSE=$(curl --fail-with-body -sS \
+          -u "$BS_USERNAME:$BS_ACCESS_KEY" \
+          -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/test-suite" \
+          -F "file=@$RUNNER_TEMP/test-suite.zip")
+        TEST_URL=$(echo "$TEST_RESPONSE" | jq -er '.test_suite_url // .test_url')
+        echo "Uploaded test suite: $TEST_URL"
+
+        BUILD_BODY=$(jq -n \
+          --arg app "$APP_URL" \
+          --arg suite "$TEST_URL" \
+          --arg device "$BS_DEVICE" \
+          '{app: $app, testSuite: $suite, devices: [$device]}')
+
+        curl --fail-with-body -sS \
+          -u "$BS_USERNAME:$BS_ACCESS_KEY" \
+          -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/build" \
+          -H "Content-Type: application/json" \
+          -d "$BUILD_BODY"
