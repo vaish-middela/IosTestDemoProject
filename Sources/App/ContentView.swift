@@ -5,23 +5,19 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24){
+            VStack(spacing: 24) {
                 Text("Hello World!")
                     .accessibilityIdentifier("greeting")
 
-                Button("Email action"{
+                Button("Email action") {
                     showMessage = true
                 }
                 .accessibilityIdentifier("emailActionButton")
             }
             .navigationTitle("Practice App")
-            .alert("Hellow from the app", isPresented: $showMessage){
-                Button("OK", role: .cancel){}
-
-               }    
+            .alert("Hello from the app", isPresented: $showMessage) {
+                Button("OK", role: .cancel) {}
             }
         }
     }
-
-    
 }
