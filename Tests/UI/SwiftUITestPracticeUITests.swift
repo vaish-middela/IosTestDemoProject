@@ -1,14 +1,7 @@
 import XCTest
 
-final class SwiftUITestPracticeUITests: XCTestCase {
-    
-    private var app: XCUIApplication!
+final class SwiftUITestPracticeUITests: BaseTest {
 
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launch()
-    }
 
     func testGreetingIsShown() {
         XCTAssertTrue(app.staticTexts["greeting"].waitForExistence(timeout: 5))
