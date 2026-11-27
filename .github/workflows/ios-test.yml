@@ -11,9 +11,6 @@ permissions:
 jobs:
   ui-tests:
     runs-on: macos-26
-    env:
-      SIMULATOR_DEVICE: ${{ vars.IOS_SIMULATOR_DEVICE || 'iPhone 17e' }}
-      SIMULATOR_OS: ${{ vars.IOS_SIMULATOR_OS || '26.4.1' }}
 
     steps:
       - name: Check out repository
@@ -28,24 +25,12 @@ jobs:
       - name: List available simulators
         run: xcrun simctl list devices available
 
-      # - name: Run UI tests on iPhone simulator
-      #   run: |
-      #     # xcodebuild test \
-      #     #   -project SwiftUITestPractice.xcodeproj \
-      #     #   -scheme SwiftUITestPractice \
-      #     #   -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
-      #     #   -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
-
-      #     xcodebuild test \
-      #       -scheme SwiftUITestPractice \
-      #       -destination 'platform=iOS Simulator,name=iPhone 16'
-
       - name: Select an available iPhone simulator and run tests
         shell: bash
         run: |
           set -euo pipefail
 
-          DEVICE_ID=$(python3 .github/scripts/select_iphone.py)
+          DEVICE_ID=$(python3 .github/scripts/select_iphone_simulator.py)
           echo "Using simulator: $DEVICE_ID"
 
           xcodebuild test \
@@ -53,6 +38,15 @@ jobs:
             -scheme SwiftUITestPractice \
             -destination "id=$DEVICE_ID" \
             -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+
+      - name: Save simulator test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-results
+          path: ${{ runner.temp }}/SwiftUITestResults.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
 
   browserstack:
     if: github.event_name == 'workflow_dispatch'
@@ -62,16 +56,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Check secret availability
-        env:
-          BS_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BS_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BS_DEVICE: ${{ secrets.BROWSERSTACK_DEVICE }}
-        run: |
-          [ -n "$BS_USERNAME" ] && echo "USERNAME_PRESENT" || echo "USERNAME_MISSING"
-          [ -n "$BS_ACCESS_KEY" ] && echo "ACCESS_KEY_PRESENT" || echo "ACCESS_KEY_MISSING"
-          [ -n "$BS_DEVICE" ] && echo "DEVICE_PRESENT" || echo "DEVICE_MISSING"
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -110,16 +94,13 @@ jobs:
         env:
           BS_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BS_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BS_DEVICE: ${{ secrets.BROWSERSTACK_DEVICE }}
+          BS_DEVICE: ${{ vars.BROWSERSTACK_DEVICE }}
         run: |
           set -euo pipefail
-          # test -n "$BS_USERNAME"
-          # test -n "$BS_ACCESS_KEY"
-          # test -n "$BS_DEVICE"
-          [ -n "$BS_USERNAME" ] || { echo "BROWSERSTACK_USERNAME is empty"; exit 1; }
-          [ -n "$BS_ACCESS_KEY" ] || { echo "BROWSERSTACK_ACCESS_KEY is empty"; exit 1; }
-          [ -n "$BS_DEVICE" ] || { echo "BROWSERSTACK_DEVICE is empty"; exit 1; }
-          echo "All BrowserStack settings are present"
+
+          [ -n "$BS_USERNAME" ] || { echo "BROWSERSTACK_USERNAME is empty or unavailable"; exit 1; }
+          [ -n "$BS_ACCESS_KEY" ] || { echo "BROWSERSTACK_ACCESS_KEY is empty or unavailable"; exit 1; }
+          [ -n "$BS_DEVICE" ] || { echo "BROWSERSTACK_DEVICE variable is empty or unavailable"; exit 1; }
 
           APP_RESPONSE=$(curl --fail-with-body -sS \
             -u "$BS_USERNAME:$BS_ACCESS_KEY" \
