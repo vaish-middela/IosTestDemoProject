@@ -1,6 +1,7 @@
 import XCTest
 
 final class SwiftUITestPracticeUITests: XCTestCase {
+    
     private var app: XCUIApplication!
 
     override func setUpWithError() throws {

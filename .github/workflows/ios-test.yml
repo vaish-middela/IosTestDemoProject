@@ -25,8 +25,8 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate --spec project.yml
 
-      # - name: List available simulators
-      #   run: xcrun simctl list devices available
+      - name: List available simulators
+        run: xcrun simctl list devices available
 
       - name: Run UI tests on iPhone simulator
         run: |

@@ -44,3 +44,12 @@ When you need to wait for an element to disappear (like a loading spinner), beco
    // Waits until submitButton.isEnabled becomes true
    XCTAssertTrue(submitButton.wait(for: \.isEnabled, toEqual: true, timeout: 5))
    ```
+
+## Quick Comparison: Espresso vs. XCUITest
+
+| Scenario                                | Android (Espresso)                                                                                             | iOS (XCUITest)                                           |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **UI synchronization**                  | Waits for the main thread and registered `IdlingResource`s to become idle.                                     | Waits for the app’s UI to become ready for interaction.  |
+| **Assert that a view appears**          | `onView(matcher).check(matches(isDisplayed()))`; register an `IdlingResource` for app-managed background work. | `element.waitForExistence(timeout:)`                     |
+| **Wait for a spinner to be removed**    | Use an `IdlingResource` to track the work that the spinner represents, then assert it is gone.                 | `spinner.waitForNonExistence(timeout:)`                  |
+| **Wait for a button to become enabled** | Track the operation with an `IdlingResource`, then assert with `matches(isEnabled())`.                         | `button.wait(for: \.isEnabled, toEqual: true, timeout:)` |
