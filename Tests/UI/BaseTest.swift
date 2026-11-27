@@ -9,11 +9,6 @@ class BaseTest: XCTestCase {
         app.launch()
     }
 
-    override func tearDownWithError() throws {
-        if app.state == .running {
-            app.terminate()
-        }
-    }
 
     func waitForElement(
         _ element: XCUIElement,
