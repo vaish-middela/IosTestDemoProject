@@ -1,6 +1,6 @@
 import XCTest
 
-final class BaseTest: XCTestCase {
+ class BaseTest: XCTestCase {
     var app: XCUIApplication!
 
     override func setUpWithError() throws {
