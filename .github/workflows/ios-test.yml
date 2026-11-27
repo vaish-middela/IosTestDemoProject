@@ -28,17 +28,17 @@ jobs:
       - name: List available simulators
         run: xcrun simctl list devices available
 
-      - name: Run UI tests on iPhone simulator
-        run: |
-          # xcodebuild test \
-          #   -project SwiftUITestPractice.xcodeproj \
-          #   -scheme SwiftUITestPractice \
-          #   -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
-          #   -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+      # - name: Run UI tests on iPhone simulator
+      #   run: |
+      #     # xcodebuild test \
+      #     #   -project SwiftUITestPractice.xcodeproj \
+      #     #   -scheme SwiftUITestPractice \
+      #     #   -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
+      #     #   -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
 
-          xcodebuild test \
-            -scheme SwiftUITestPractice \
-            -destination 'platform=iOS Simulator,name=iPhone 16'
+      #     xcodebuild test \
+      #       -scheme SwiftUITestPractice \
+      #       -destination 'platform=iOS Simulator,name=iPhone 16'
 
       - name: Select an available iPhone simulator and run tests
         shell: bash
