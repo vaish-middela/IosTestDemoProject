@@ -37,7 +37,7 @@ jobs:
           #   -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
 
           xcodebuild test \
-            -scheme IosTestDemoProject \
+            -scheme SwiftUITestPractice \
             -destination 'platform=iOS Simulator,name=iPhone 16'
 
       - name: Save simulator test results
