@@ -30,11 +30,15 @@ jobs:
 
       - name: Run UI tests on iPhone simulator
         run: |
+          # xcodebuild test \
+          #   -project SwiftUITestPractice.xcodeproj \
+          #   -scheme SwiftUITestPractice \
+          #   -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
+          #   -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+
           xcodebuild test \
-            -project SwiftUITestPractice.xcodeproj \
-            -scheme SwiftUITestPractice \
-            -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS" \
-            -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
+            -scheme IosTestDemoProject \
+            -destination 'platform=iOS Simulator,name=iPhone 16'
 
       - name: Save simulator test results
         if: always()
