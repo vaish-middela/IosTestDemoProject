@@ -54,6 +54,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check secret availability
+        env:
+          BS_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BS_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BS_DEVICE: ${{ secrets.BROWSERSTACK_DEVICE }}
+        run: |
+          [ -n "$BS_USERNAME" ] && echo "USERNAME_PRESENT" || echo "USERNAME_MISSING"
+          [ -n "$BS_ACCESS_KEY" ] && echo "ACCESS_KEY_PRESENT" || echo "ACCESS_KEY_MISSING"
+          [ -n "$BS_DEVICE" ] && echo "DEVICE_PRESENT" || echo "DEVICE_MISSING"
+
       - name: Install XcodeGen
         run: brew install xcodegen
 
