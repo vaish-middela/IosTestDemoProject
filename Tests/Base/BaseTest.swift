@@ -16,7 +16,7 @@ import XCTest
     }
 
 //- file: StaticString = #filePath is the source file’s path.
-// - line: UInt = #line is the line number where waitForElement(...) was called.
+//- line: UInt = #line is the line number where waitForElement(...) was called.
 // Swift fills in #filePath and #line automatically. Passing them to XCTAssertTrue makes the failure point to the test that called the helper, instead of pointing inside BaseUITest.swift.
 
     func waitForElement(
