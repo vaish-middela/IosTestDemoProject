@@ -40,14 +40,19 @@ jobs:
             -scheme SwiftUITestPractice \
             -destination 'platform=iOS Simulator,name=iPhone 16'
 
-      - name: Save simulator test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ui-test-results
-          path: ${{ runner.temp }}/SwiftUITestResults.xcresult
-          if-no-files-found: ignore
-          retention-days: 7
+      - name: Select an available iPhone simulator and run tests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEVICE_ID=$(python3 .github/scripts/select_iphone_simulator.py)
+          echo "Using simulator: $DEVICE_ID"
+
+          xcodebuild test \
+            -project SwiftUITestPractice.xcodeproj \
+            -scheme SwiftUITestPractice \
+            -destination "id=$DEVICE_ID" \
+            -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
 
   browserstack:
     if: github.event_name == 'workflow_dispatch'
