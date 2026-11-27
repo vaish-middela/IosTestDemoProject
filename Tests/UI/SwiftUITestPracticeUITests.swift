@@ -12,7 +12,7 @@ final class SwiftUITestPracticeUITests: BaseTest {
         app.buttons["emailActionButton"].tap()
         let alert = app.alerts["Hello from the app"]
         waitForElement(alert)
-        waitForElement(alert.button["OK"])
+        waitForElement(alert.buttons["OK"])
 
         // XCTAssertTrue(
         //     app.alerts["Hello from the app"].waitForElement(timeout: 5)
