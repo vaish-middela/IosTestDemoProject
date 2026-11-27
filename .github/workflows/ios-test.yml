@@ -30,13 +30,18 @@ jobs:
         run: |
           set -euo pipefail
 
-          DEVICE_ID=$(python3 .github/scripts/select_iphone_simulator.py)
+          DEVICE_ID="$(python3 .github/scripts/select_iphone_simulator.py)"
+          if [[ -z "$DEVICE_ID" ]]; then
+            echo "Simulator selection returned an empty device ID"
+            exit 1
+          fi
+
           echo "Using simulator: $DEVICE_ID"
 
           xcodebuild test \
             -project SwiftUITestPractice.xcodeproj \
             -scheme SwiftUITestPractice \
-            -destination "id=$DEVICE_ID" \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -resultBundlePath "$RUNNER_TEMP/SwiftUITestResults.xcresult"
 
       - name: Save simulator test results
